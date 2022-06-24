@@ -269,10 +269,9 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
 	 USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
 	 USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-	 uint8_t len = (uint8_t)*Len;
+	 uint32_t len = (uint32_t)*Len;
 	 CDC_Transmit_FS(Buf, len);
-	 //uint32_t toflash = Buf[0] | (Buf[1] << 8) | (Buf[2] << 16) | (Buf[3] << 24);
-	 for(uint16_t i = 0; i != len; i++){
+	 for(uint32_t i = 0; i != len; i++){
 		 HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, AppStart + floffset, Buf[i]);
 		 floffset++;
 	 }
