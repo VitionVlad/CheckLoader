@@ -83,20 +83,20 @@ uint16_t TFT9341_HEIGHT;
 void TFT9341_SendCommand(uint8_t cmd)
 {
   DC_COMMAND();
-  HAL_SPI_Transmit (&hspi1, &cmd, 1, 5000);
+  HAL_SPI_Transmit(&hspi1, &cmd, 1, 0);
 }
 
 void TFT9341_SendData(uint8_t dt)
 {
 	DC_DATA();
-	HAL_SPI_Transmit (&hspi1, &dt, 1, 5000);
+	HAL_SPI_Transmit (&hspi1, &dt, 1, 0);
 }
 
 static void TFT9341_WriteData(uint8_t* buff, size_t buff_size) {
 	DC_DATA();
 	while(buff_size > 0) {
 		uint16_t chunk_size = buff_size > 32768 ? 32768 : buff_size;
-		HAL_SPI_Transmit(&hspi1, buff, chunk_size, HAL_MAX_DELAY);
+		HAL_SPI_Transmit(&hspi1, buff, chunk_size, 0);
 		buff += chunk_size;
 		buff_size -= chunk_size;
 	}
@@ -111,22 +111,17 @@ void TFT9341_reset(void)
 
 static void TFT9341_SetAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
-  // column address set
-  TFT9341_SendCommand(0x2A); // CASET
-  {
-    uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-    TFT9341_WriteData(data, sizeof(data));
-  }
-
-  // row address set
-  TFT9341_SendCommand(0x2B); // RASET
-  {
-    uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-    TFT9341_WriteData(data, sizeof(data));
-  }
-
-  // write to RAM
-  TFT9341_SendCommand(0x2C); // RAMWR
+	TFT9341_SendCommand(0x2A);
+	TFT9341_SendData(x0>>8);
+	TFT9341_SendData(x0);
+	TFT9341_SendData(x1>>8);
+	TFT9341_SendData(x1);
+	TFT9341_SendCommand(0x2B);
+	TFT9341_SendData(y0>>8);
+	TFT9341_SendData(y0);
+	TFT9341_SendData(y1>>8);
+	TFT9341_SendData(y1);
+	TFT9341_SendCommand(0x2C);
 }
 
 void TFT9341_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
@@ -139,7 +134,7 @@ void TFT9341_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
   DC_DATA();
   for(uint32_t i = 0; i < (x2-x1+1)*(y2-y1+1); i++)
   {
-      HAL_SPI_Transmit(&hspi1, data, 2, 0);
+	  HAL_SPI_Transmit(&hspi1, data, 2 ,0);
   }
 }
 
@@ -282,7 +277,13 @@ void TFT9341_FillScreen(uint16_t color)
 }
 
 void TFT9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color){
-	TFT9341_SetAddrWindow(x,y,x,y);
+	TFT9341_SendCommand(0x2A);
+	TFT9341_SendData(x>>8);
+	TFT9341_SendData(x);
+	TFT9341_SendCommand(0x2B);
+	TFT9341_SendData(y>>8);
+	TFT9341_SendData(y);
+	TFT9341_SendCommand(0x2C);
 	TFT9341_SendCommand(0x2C);
 	TFT9341_SendData(color>>8);
 	TFT9341_SendData(color & 0xFF);
@@ -359,15 +360,6 @@ void jumpToApp(const uint32_t address){
     asm("msr msp, %0; bx %1;" : : "r"(vector_p->stack_addr), "r"(vector_p->func_p));
 }
 
-void eraseMemory(){
-	FLASH_EraseInitTypeDef EraseInitStruct;
-	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
-	EraseInitStruct.Sector = AppStart;
-	EraseInitStruct.NbSectors = 7;
-	uint32_t PageError;
-	HAL_FLASHEx_Erase(&EraseInitStruct, &PageError);
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -420,15 +412,13 @@ int main(void)
 	  TFT9341_reset();
 	  jumpToApp(AppStart);
   }else{
+	  HAL_FLASH_Unlock();
+	  HAL_FLASH_OB_Unlock();
 	  if(hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED){
 		  TFT9341_DrawMassive(uploadimage, 1);
 	  }else{
 		  TFT9341_DrawMassive(errscreen, 1);
 	  }
-	  while(HAL_FLASH_Unlock()!=HAL_OK)
-	  		while(HAL_FLASH_Lock()!=HAL_OK);
-	  	while(HAL_FLASH_OB_Unlock()!=HAL_OK)
-	  		while(HAL_FLASH_OB_Lock()!=HAL_OK);
   }
 
   uint8_t single_ = 0;
