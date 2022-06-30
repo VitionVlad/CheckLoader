@@ -69,7 +69,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-	SCB->VTOR = (FLASH_BASE | 0x0000dc00);
+	SCB->VTOR = (FLASH_BASE | 0x00010000);
 
   /* USER CODE END 1 */
 
@@ -99,7 +99,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t recived[3];
   while (1)
   {
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
