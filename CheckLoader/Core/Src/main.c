@@ -371,6 +371,13 @@ void jumpToApp(const uint32_t address){
     asm("msr msp, %0; bx %1;" : : "r"(vector_p->stack_addr), "r"(vector_p->func_p));
 }
 
+void eraseMem(){
+	FLASH_Erase_Sector(FLASH_SECTOR_4, VOLTAGE_RANGE_3);
+	FLASH_Erase_Sector(FLASH_SECTOR_5, VOLTAGE_RANGE_3);
+	FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
+	FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -423,6 +430,7 @@ int main(void)
   }else{
 	  HAL_FLASH_Unlock();
 	  HAL_FLASH_OB_Unlock();
+	  eraseMem();
   }
 
 
