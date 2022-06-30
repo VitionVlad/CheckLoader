@@ -68,9 +68,7 @@ extern "C" {
 
 #define DC_DATA() HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3,GPIO_PIN_SET)
 
-#define AppStart  0x0800dc00
-
-//#define AppStart  0x08000000
+#define AppStart  0x08010000
 
 #define TFT9341_MADCTL_MY  0x80
 #define TFT9341_MADCTL_MX  0x40
