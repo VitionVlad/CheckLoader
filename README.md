@@ -1,6 +1,5 @@
 # CheckLoader
-CheckLoader is a bootloader for stm32f407vet6, it uses spi for display, and usb for serial  
-i am using a tft ili9341, the conection is exact as i describet in my lybrary, with exception of led, wich is connected to PA6  
+CheckLoader is a bootloader for stm32f407vet6, with simple ui
 3V VCC
 
 GND GND
