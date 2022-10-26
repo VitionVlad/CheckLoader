@@ -17,4 +17,3 @@ PA5 SCK
 PA6 LED
 
 to send files by serial i used realterm  
-after you send data, you should see something on display send back by controller, that means that everything works fine 😃
